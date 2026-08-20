@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Chess Pro</title>
+  <meta name="description" content="Full-featured chess with AI, opening book, evaluation bar, themes and mobile gestures." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app" class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">♛</span>
+        <div>
+          <h1>Chess Pro</h1>
+          <span class="tag">Book · Eval · Themes · Touch</span>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="btnHint" class="icon-btn" title="Hint">💡</button>
+        <button id="btnTheme" class="icon-btn" title="Themes">🎨</button>
+        <button id="btnSound" class="icon-btn" title="Sound">🔊</button>
+        <button id="btnSettings" class="icon-btn" title="Settings">⚙️</button>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      <!-- Left -->
+      <aside class="panel side left-panel">
+        <section>
+          <h3>Mode</h3>
+          <div class="segmented">
+            <button data-mode="local" class="seg active">2 Players</button>
+            <button data-mode="ai" class="seg">vs AI</button>
+          </div>
+        </section>
+
+        <section id="aiOptions" class="hidden">
+          <label>You play as</label>
+          <div class="segmented">
+            <button data-color="w" class="seg active">White</button>
+            <button data-color="b" class="seg">Black</button>
+          </div>
+          <label style="margin-top:12px">Difficulty</label>
+          <select id="aiLevel">
+            <option value="1">Beginner</option>
+            <option value="2" selected>Intermediate</option>
+            <option value="3">Advanced</option>
+            <option value="4">Expert</option>
+          </select>
+        </section>
+
+        <section class="controls">
+          <button id="btnNew" class="btn primary full">New Game</button>
+          <div class="btn-row">
+            <button id="btnUndo" class="btn">Undo</button>
+            <button id="btnFlip" class="btn">Flip</button>
+          </div>
+          <div class="btn-row">
+            <button id="btnResign" class="btn danger">Resign</button>
+            <button id="btnDraw" class="btn">Draw</button>
+          </div>
+        </section>
+
+        <section class="clock-section">
+          <div class="clock" id="clockWhite">
+            <span class="clock-label">White</span>
+            <span class="clock-time" id="timeWhite">10:00</span>
+          </div>
+          <div class="clock" id="clockBlack">
+            <span class="clock-label">Black</span>
+            <span class="clock-time" id="timeBlack">10:00</span>
+          </div>
+          <label class="toggle-row">
+            <input type="checkbox" id="clockEnabled" />
+            <span>Clocks</span>
+          </label>
+        </section>
+      </aside>
+
+      <!-- Board + Eval bar -->
+      <main class="board-area">
+        <div class="board-with-eval">
+          <div class="eval-bar-wrap" id="evalBarWrap" title="Evaluation">
+            <div class="eval-bar" id="evalBar">
+              <div class="eval-fill" id="evalFill"></div>
+            </div>
+            <div class="eval-score" id="evalScore">0.0</div>
+          </div>
+          <div class="board-container" id="boardContainer">
+            <div id="board" class="board"></div>
+            <div class="coords-files" id="coordsFiles"></div>
+            <div class="coords-ranks" id="coordsRanks"></div>
+          </div>
+        </div>
+        <div class="status-bar">
+          <div id="statusText">White to move</div>
+          <div id="gameResult" class="result hidden"></div>
+          <div id="bookInfo" class="book-info"></div>
+        </div>
+      </main>
+
+      <!-- Right -->
+      <aside class="panel side right-panel">
+        <section>
+          <h3>Moves</h3>
+          <div id="moveList" class="move-list"></div>
+        </section>
+        <section class="captured-section">
+          <div class="captured-row">
+            <span class="cap-label">White</span>
+            <div id="capBlack" class="cap-pieces"></div>
+            <span id="matWhite" class="mat-score"></span>
+          </div>
+          <div class="captured-row">
+            <span class="cap-label">Black</span>
+            <div id="capWhite" class="cap-pieces"></div>
+            <span id="matBlack" class="mat-score"></span>
+          </div>
+        </section>
+        <section>
+          <h3>PGN</h3>
+          <textarea id="pgnBox" readonly placeholder="PGN…"></textarea>
+          <div class="btn-row">
+            <button id="btnCopyPgn" class="btn small">Copy</button>
+            <button id="btnDownloadPgn" class="btn small">Download</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Promotion -->
+  <div id="promoModal" class="modal hidden">
+    <div class="modal-card">
+      <h3>Promote to</h3>
+      <div class="promo-choices" id="promoChoices"></div>
+    </div>
+  </div>
+
+  <!-- Themes -->
+  <div id="themeModal" class="modal hidden">
+    <div class="modal-card wide">
+      <h3>Board Theme</h3>
+      <div class="theme-grid" id="themeGrid"></div>
+      <button id="closeTheme" class="btn full" style="margin-top:16px">Close</button>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-card">
+      <h3>Settings</h3>
+      <label class="toggle-row"><input type="checkbox" id="setHighlights" checked /> Legal moves</label>
+      <label class="toggle-row"><input type="checkbox" id="setLastMove" checked /> Last move</label>
+      <label class="toggle-row"><input type="checkbox" id="setCoords" checked /> Coordinates</label>
+      <label class="toggle-row"><input type="checkbox" id="setEval" checked /> Evaluation bar</label>
+      <label class="toggle-row"><input type="checkbox" id="setBook" checked /> Opening book</label>
+      <label class="toggle-row"><input type="checkbox" id="setSound" checked /> Sound</label>
+      <button id="closeSettings" class="btn full" style="margin-top:16px">Done</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
+  <script src="pieces.js"></script>
+  <script src="book.js"></script>
+  <script src="ai.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>
